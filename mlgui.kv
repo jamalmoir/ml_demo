@@ -1,0 +1,75 @@
+<GlobalLabel@Label>
+    color: 0.22, 0.22, 0.22, 1
+
+<GlobalButton@Button>
+    background_color: 0.75, 0.70, 0.51, 1
+    background_down: ''
+
+<MainScreen>
+    BoxLayout:
+        id: main_screen
+        orientation: 'horizontal'
+        minimum_size: root.size
+        pos: root.pos
+        padding: 50
+        spacing: 100
+
+        canvas:
+            Color:
+                rgba: 0.96, 0.96, 0.96 , 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        BoxLayout:
+            id: information
+            orientation: 'vertical'
+
+            GlobalLabel:
+                id: title
+                text: 'Machine Learning Demo'
+                font_size: self.height * 0.4
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+
+            GlobalLabel:
+                id: author
+                text: 'By Jamal Moir'
+                font_size: self.height * 0.1
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+
+            GlobalLabel:
+                id: instructions
+                text: 'Instructions:\nSelect a model from the menu to the right, enter or load data and experiment using the different algorithms to train models and make predictions, or load an already trained model to start using it to predict! If you need help click \'help\' at any time.'
+                font_size: self.height * 0.15
+                text_size: self.size
+                halign: 'left'
+                valign: 'top'
+
+
+        AnchorLayout:
+            id: right_menu
+            anchor_x: 'right'
+            anchor_y: 'bottom'
+            orientation: 'vertical'
+            size_hint_x: 0.25
+
+            BoxLayout:
+                orientation: 'vertical'
+
+                GlobalButton:
+                    id: 'neural-network'
+                    text: 'Neural Network'
+                    on_press: print(self.text)
+                    size_hint: None, None
+                    size: right_menu.width, 50
+
+                GlobalButton:
+                    id: 'decision-tree'
+                    text: 'Decision Tree'
+                    on_press: print(self.text)
+                    size_hint: None, None
+                    size: right_menu.width, 50
