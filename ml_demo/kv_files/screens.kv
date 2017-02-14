@@ -62,8 +62,10 @@
 
 
 <NeuralNetworkScreen>
+    id: nn_screen
+
     BoxLayout:
-        id: nn_screen
+        id: nn_screen_container
         orientation: 'horizontal'
         minimum_size: root.size
         pos: root.pos
@@ -101,12 +103,14 @@
                 text: 'Load Model'
                 size_hint: None, None
                 size: nn_menu.width, 40
+                on_press: nn_screen.load_model()
 
             GlobalButton:
                 id: load_data
                 text: 'Load Data'
                 size_hint: None, None
                 size: nn_menu.width, 40
+                on_press: nn_screen.load_data()
 
             GlobalButton:
                 id: enter_data
@@ -119,6 +123,7 @@
                 text: 'Save Model'
                 size_hint: None, None
                 size: nn_menu.width, 40
+                on_press: nn_screen.save_model()
 
             GlobalButton:
                 id: clear
@@ -247,8 +252,10 @@
                         on_press: print(self.text)
 
 <DecisionTreeScreen>
+    id: dt_screen
+
     BoxLayout:
-        id: dt_screen
+        id: dt_screen_container
         orientation: 'horizontal'
         minimum_size: root.size
         pos: root.pos
@@ -286,12 +293,14 @@
                 text: 'Load Model'
                 size_hint: None, None
                 size: nn_menu.width, 40
+                on_press: dt_screen.load_model()
 
             GlobalButton:
                 id: load_data
                 text: 'Load Data'
                 size_hint: None, None
                 size: nn_menu.width, 40
+                on_press: dt_screen.load_data()
 
             GlobalButton:
                 id: enter_data
@@ -304,6 +313,7 @@
                 text: 'Save Model'
                 size_hint: None, None
                 size: nn_menu.width, 40
+                on_press: dt_screen.save_model()
 
             GlobalButton:
                 id: clear
