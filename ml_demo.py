@@ -17,10 +17,15 @@ class MainScreen(Screen):
 class NeuralNetworkScreen(Screen):
     pass
 
+
+class DecisionTreeScreen(Screen):
+    pass
+
 screen_manager = ScreenManager()
 
 screen_manager.add_widget(MainScreen(name='main_screen'))
 screen_manager.add_widget(NeuralNetworkScreen(name='nn_screen'))
+screen_manager.add_widget(DecisionTreeScreen(name='dt_screen'))
 
 
 class MLGUIApp(App):

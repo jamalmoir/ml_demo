@@ -81,15 +81,15 @@
                     text: 'Neural Network'
                     size_hint: None, None
                     size: right_menu.width, 40
-                    on_press:
-                        root.manager.current = 'nn_screen'
+                    on_press: root.manager.current = 'nn_screen'
 
                 GlobalButton:
                     id: decision-tree
                     text: 'Decision Tree'
                     size_hint: None, None
                     size: right_menu.width, 40
-                    on_press: print(self.text)
+                    on_press: root.manager.current = 'dt_screen'
+
 
 <NeuralNetworkScreen>
     BoxLayout:
@@ -267,8 +267,113 @@
                         text: 'Back'
                         size_hint: None, None
                         size: right_menu.width, 40
-                        on_press:
-                            root.manager.current = 'main_screen'
+                        on_press: root.manager.current = 'main_screen'
+
+                    GlobalButton:
+                        id: help
+                        text: 'Help'
+                        size_hint: None, None
+                        size: right_menu.width, 40
+                        on_press: print(self.text)
+
+<DecisionTreeScreen>
+    BoxLayout:
+        id: dt_screen
+        orientation: 'horizontal'
+        minimum_size: root.size
+        pos: root.pos
+        padding: 0
+        spacing: 50
+
+        StackLayout:
+            id: nn_menu
+            orientation: 'tb-lr'
+            spacing: 0
+            padding: 0
+            size_hint_x: 0.25
+
+            canvas:
+                Color:
+                    rgba: 0.86, 0.82, 0.75, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            GlobalLabel:
+                id: nn_label
+                text: "Decision Tree"
+                text_size: self.size
+                font_size: 24
+                size_hint: None, None
+                size: nn_menu.width, self.height
+                bold: True
+                padding: 5, 5
+                valign: 'top'
+                halign: 'left'
+
+            GlobalButton:
+                id: load_model
+                text: 'Load Model'
+                size_hint: None, None
+                size: nn_menu.width, 40
+
+            GlobalButton:
+                id: load_data
+                text: 'Load Data'
+                size_hint: None, None
+                size: nn_menu.width, 40
+
+            GlobalButton:
+                id: enter_data
+                text: 'Enter Data'
+                size_hint: None, None
+                size: nn_menu.width, 40
+
+            GlobalButton:
+                id: save_model
+                text: 'Save Model'
+                size_hint: None, None
+                size: nn_menu.width, 40
+
+            GlobalButton:
+                id: clear
+                text: 'Clear'
+                size_hint: None, None
+                size: nn_menu.width, 40
+
+
+        BoxLayout:
+            id: dt_graphic
+            orientation: 'vertical'
+
+        Sidebar:
+            id: right_bar
+            rows: 2
+
+            AnchorLayout:
+                id: right_menu
+                anchor_x: 'right'
+                anchor_y: 'bottom'
+                orientation: 'vertical'
+                size_hint: 0.25, 0.4
+
+                BoxLayout:
+                    orientation: 'vertical'
+
+                    GlobalButton:
+                        id: train_predict
+                        text: 'Train'
+                        size_hint: None, None
+                        size: right_menu.width, 40
+                        disabled: True
+                        on_press: print(self.text)
+
+                    GlobalButton:
+                        id: back
+                        text: 'Back'
+                        size_hint: None, None
+                        size: right_menu.width, 40
+                        on_press: root.manager.current = 'main_screen'
 
                     GlobalButton:
                         id: help
