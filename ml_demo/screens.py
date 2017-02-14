@@ -1,34 +1,26 @@
 import os
 
-from kivy.factory import Factory
-from kivy.app import App
-from kivy.lang import Builder
-from kivy.uix.screenmanager import ScreenManager
-from kivy.config import Config
-from kivy.uix.floatlayout import FloatLayout
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
+from kivy.uix.screenmanager import Screen
 
-from screens import MainScreen, NeuralNetworkScreen, DecisionTreeScreen
-from dialogs import LoadDialog, SaveDialog
-
-Config.set('graphics', 'width', '1200')
-Config.set('graphics', 'height', '600')
-Config.set('graphics', 'resizable', False)
-
-Builder.load_file('mlgui.kv')
-
-screen_manager = ScreenManager()
-
-screen_manager.add_widget(MainScreen(name='main_screen'))
-screen_manager.add_widget(NeuralNetworkScreen(name='nn_screen'))
-screen_manager.add_widget(DecisionTreeScreen(name='dt_screen'))
+from ml_demo.dialogs import LoadDialog, SaveDialog
 
 
-class Root(FloatLayout):
+class MainScreen(Screen):
+    pass
+
+
+class ModelScreen(Screen):
     loadfile = ObjectProperty(None)
     savefile = ObjectProperty(None)
     text_input = ObjectProperty(None)
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.model = None
+        self.data = None
 
     def dismiss_popup(self):
         self._popup.dismiss()
@@ -59,16 +51,37 @@ class Root(FloatLayout):
 
         self.dismiss_popup()
 
+    def load_model(self):
+        self.model = self.show_load()
 
-class MLGUIApp(App):
+    def load_data(self):
+        self.data = self.show_load()
 
-    def build(self):
-        return screen_manager
+    def enter_data(self):
+        pass
+
+    def save_model(self):
+        self.show_save()
+
+    def clear(self):
+        self.model = None
+        self.data = None
 
 
-Factory.register('Root', cls=Root)
-Factory.register('LoadDialog', cls=LoadDialog)
-Factory.register('SaveDialog', cls=SaveDialog)
+class NeuralNetworkScreen(ModelScreen):
+    def train(self):
+        pass
 
-mlgui = MLGUIApp()
-mlgui.run()
+    def display_training_graph(self):
+        pass
+
+    def predict(self):
+        pass
+
+
+class DecisionTreeScreen(ModelScreen):
+    def train(self):
+        pass
+
+    def predict(self):
+        pass
