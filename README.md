@@ -14,6 +14,6 @@ This application goes alongside my Machine learning library located at https://g
 **ROADMAP**
 - ~~Create the main screen~~
 - ~~Create the Neural Network screen without function~~
-- Create the Decision Tree 
+- ~~Create the Decision Tree screen without function~~
 - Add functionality to Neural Network screen
 - Add functionality to Decision Tree screen
