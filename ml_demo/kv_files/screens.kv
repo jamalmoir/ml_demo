@@ -2,73 +2,63 @@
     BoxLayout:
         id: main_screen
         orientation: 'horizontal'
-        minimum_size: root.size
-        pos: root.pos
-        padding: [50, 50, 0, 0]
+        padding: 50, 50, 0, 0
         spacing: 50
 
         BoxLayout:
-            id: information
             orientation: 'vertical'
+            spacing: 50
 
             GlobalLabel:
                 id: title
                 text: 'Machine Learning Demo'
-                font_size: 80
-                text_size: self.size
-                halign: 'left'
-                valign: 'top'
+                font_size: root.width * 0.001 * 80
+                hint_size_y: None
+                text_size: self.width, None
+                height: self.texture_size[1]
 
             GlobalLabel:
-                id: author
                 text: 'By Jamal Moir'
-                font_size: 16
+                font_size: root.width * 0.001 * 16
                 text_size: self.size
-                halign: 'left'
                 valign: 'top'
 
             GlobalLabel:
-                id: instructions
                 text: 'Instructions:\nSelect a model from the menu to the right, enter or load data and experiment using the different algorithms to train models and make predictions, or load an already trained model to start using it to predict! If you need help click \'help\' at any time.'
-                font_size: 24
+                font_size: root.width * 0.001 * 24
                 text_size: self.size
-                halign: 'left'
-                valign: 'top'
+                padding: 0, 20
 
-
-        AnchorLayout:
+        BoxLayout:
             id: right_menu
-            anchor_x: 'right'
-            anchor_y: 'bottom'
             orientation: 'vertical'
             size_hint_x: 0.25
 
-            BoxLayout:
-                orientation: 'vertical'
+            GlobalButton:
+                text: 'Neural Network'
+                size_hint: None, None
+                size: right_menu.width, 40
+                on_press: root.manager.current = 'nn_screen'
 
-                GlobalButton:
-                    id: neural-network
-                    text: 'Neural Network'
-                    size_hint: None, None
-                    size: right_menu.width, 40
-                    on_press: root.manager.current = 'nn_screen'
-
-                GlobalButton:
-                    id: decision-tree
-                    text: 'Decision Tree'
-                    size_hint: None, None
-                    size: right_menu.width, 40
-                    on_press: root.manager.current = 'dt_screen'
+            GlobalButton:
+                text: 'Decision Tree'
+                size_hint: None, None
+                size: right_menu.width, 40
+                on_press: root.manager.current = 'dt_screen'
 
 
 <NeuralNetworkScreen>
-    id: nn_screen
+    lam: lam
+    alpha: alpha
+    epochs: epochs
+    adaptive: adaptive
+    dec_amount: dec_amount
+    classes: classes
+    hidden_layer_size: hidden_layer_size
 
     BoxLayout:
-        id: nn_screen_container
+        id: nn_screen
         orientation: 'horizontal'
-        minimum_size: root.size
-        pos: root.pos
         padding: 0
         spacing: 50
 
@@ -87,183 +77,175 @@
                     size: self.size
 
             GlobalLabel:
-                id: nn_label
                 text: "Neural Network"
                 text_size: self.size
-                font_size: 24
+                font_size: root.width * 0.001 * 18
                 size_hint: None, None
                 size: nn_menu.width, self.height
                 bold: True
                 padding: 5, 5
                 valign: 'top'
-                halign: 'left'
 
             GlobalButton:
-                id: load_model
                 text: 'Load Model'
                 size_hint: None, None
                 size: nn_menu.width, 40
-                on_press: nn_screen.load_model()
+                on_press: nn_screen.parent.show_load_model()
 
             GlobalButton:
-                id: load_data
                 text: 'Load Data'
                 size_hint: None, None
                 size: nn_menu.width, 40
-                on_press: nn_screen.load_data()
+                on_press: nn_screen.parent.show_load_data()
 
             GlobalButton:
-                id: enter_data
-                text: 'Enter Data'
-                size_hint: None, None
-                size: nn_menu.width, 40
-
-            GlobalButton:
-                id: save_model
                 text: 'Save Model'
                 size_hint: None, None
                 size: nn_menu.width, 40
-                on_press: nn_screen.save_model()
+                on_press: nn_screen.parent.show_save_model()
 
             GlobalButton:
-                id: clear
                 text: 'Clear'
                 size_hint: None, None
                 size: nn_menu.width, 40
-
+                on_press: nn_screen.parent.clear()
 
         BoxLayout:
             id: nn_graphic
             orientation: 'vertical'
 
-        Sidebar:
+        BoxLayout:
             id: right_bar
-            rows: 2
+            orientation: 'vertical'
+            size_hint_x: 0.25
+            spacing: 0
 
-            AnchorLayout:
+            BoxLayout:
                 id: parameters
-                anchor_x: 'right'
-                anchor_y: 'top'
-                size_hint: 0.25, 0.5
-
-                GridLayout:
-                    orientation: 'vertical'
-                    rows: 12
-                    spacing: 0
-
-                    GlobalLabel:
-                        text: 'Lambda: {}'.format(lam.value)
-                        valign: 'top'
-                        halign: 'left'
-
-                    ParamSlider:
-                        id: lam
-                        min: 0
-                        max: 100
-                        value: 0
-                        step: 1
-
-                    GlobalLabel:
-                        text: 'Alpha: {}'.format(alpha.value)
-                        valign: 'top'
-                        halign: 'left'
-
-                    ParamSlider:
-                        id: alpha
-                        min: 0
-                        max: 100
-                        value: 0
-                        step: 1
-
-                    GlobalLabel:
-                        text: 'Epochs: {}'.format(epochs.value)
-                        valign: 'top'
-                        halign: 'left'
-
-                    ParamSlider:
-                        id: epochs
-                        min: 0
-                        max: 10000
-                        value: 0
-                        step: 100
-
-                    GlobalLabel:
-                        text: 'Adaptive: {}'.format(adaptive.value)
-                        valign: 'top'
-                        halign: 'left'
-
-                    ParamSlider:
-                        id: adaptive
-                        min: 0
-                        max: 100
-                        value: 0
-                        step: 1
-
-                    GlobalLabel:
-                        text: 'Decrease: {}'.format(dec_amount.value)
-                        valign: 'top'
-                        halign: 'left'
-
-                    ParamSlider:
-                        id: dec_amount
-                        min: 0
-                        max: 100
-                        value: 0
-                        step: 1
-
-            AnchorLayout:
-                id: right_menu
-                anchor_x: 'right'
-                anchor_y: 'bottom'
                 orientation: 'vertical'
-                size_hint: 0.25, 0.4
+                padding: 10
+                spacing: 20
 
-                BoxLayout:
-                    orientation: 'vertical'
+                GlobalLabel:
+                    text: 'Lambda: {}'.format(lam.value)
+                    font_size: root.width * 0.001 * 14
 
-                    GlobalButton:
-                        id: train_predict
-                        text: 'Train'
-                        size_hint: None, None
-                        size: right_menu.width, 40
-                        disabled: True
-                        on_press: print(self.text)
+                ParamSlider:
+                    id: lam
+                    min: 0
+                    max: 0.1
+                    value: 0.01
+                    step: 0.005
 
-                    GlobalButton:
-                        id: training_graph
-                        text: 'Training Graph'
-                        size_hint: None, None
-                        size: right_menu.width, 40
-                        disabled: True
-                        on_press: print(self.text)
+                GlobalLabel:
+                    text: 'Alpha: {}'.format(alpha.value)
+                    font_size: root.width * 0.001 * 14
 
-                    GlobalButton:
-                        id: back
-                        text: 'Back'
-                        size_hint: None, None
-                        size: right_menu.width, 40
-                        on_press: root.manager.current = 'main_screen'
+                ParamSlider:
+                    id: alpha
+                    min: 0
+                    max: 1
+                    value: 0.5
+                    step: 0.05
 
-                    GlobalButton:
-                        id: help
-                        text: 'Help'
-                        size_hint: None, None
-                        size: right_menu.width, 40
-                        on_press: print(self.text)
+                GlobalLabel:
+                    text: 'Epochs: {}'.format(epochs.value)
+                    font_size: root.width * 0.001 * 14
+
+                ParamSlider:
+                    id: epochs
+                    min: 0
+                    max: 10000
+                    value: 500
+                    step: 100
+
+                GlobalLabel:
+                    text: 'Adaptive: {}'.format(adaptive.value)
+                    font_size: root.width * 0.001 * 14
+
+                ParamSlider:
+                    id: adaptive
+                    min: 0
+                    max: 0.005
+                    value: 0.001
+                    step: 0.0005
+
+                GlobalLabel:
+                    text: 'Decrease: {}'.format(dec_amount.value)
+                    font_size: root.width * 0.001 * 14
+
+                ParamSlider:
+                    id: dec_amount
+                    min: 0
+                    max: 0.0005
+                    value: 0.0001
+                    step: 0.00005
+
+                GlobalLabel:
+                    text: 'Classes: {}'.format(epochs.value)
+                    font_size: root.width * 0.001 * 14
+
+                ParamSlider:
+                    id: classes
+                    min: 0
+                    max: 100
+                    value: 3
+                    step: 1
+
+                GlobalLabel:
+                    text: 'Hidden Layer Size: {}'.format(epochs.value)
+                    font_size: root.width * 0.001 * 14
+
+                ParamSlider:
+                    id: hidden_layer_size
+                    min: 0
+                    max: 1000
+                    value: 500
+                    step: 50
+
+            BoxLayout:
+                id: right_menu
+                orientation: 'vertical'
+
+                GlobalButton:
+                    id: train_predict
+                    text: 'Train'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    disabled: False
+                    on_press: nn_screen.parent.train()
+
+                GlobalButton:
+                    id: training_graph
+                    text: 'Training Graph'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    disabled: True
+                    on_press: nn_screen.parent.display_training_graph()
+
+                GlobalButton:
+                    id: back
+                    text: 'Back'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    on_press: root.manager.current = 'main_screen'
+
+                GlobalButton:
+                    id: help
+                    text: 'Help'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    on_press: print(self.text)
 
 <DecisionTreeScreen>
-    id: dt_screen
-
     BoxLayout:
-        id: dt_screen_container
+        id: dt_screen
         orientation: 'horizontal'
-        minimum_size: root.size
-        pos: root.pos
         padding: 0
         spacing: 50
 
         StackLayout:
-            id: nn_menu
+            id: dt_menu
             orientation: 'tb-lr'
             spacing: 0
             padding: 0
@@ -277,87 +259,63 @@
                     size: self.size
 
             GlobalLabel:
-                id: nn_label
                 text: "Decision Tree"
                 text_size: self.size
-                font_size: 24
+                font_size: root.width * 0.001 * 18
                 size_hint: None, None
-                size: nn_menu.width, self.height
+                size: dt_menu.width, self.height
                 bold: True
                 padding: 5, 5
                 valign: 'top'
-                halign: 'left'
 
             GlobalButton:
-                id: load_model
                 text: 'Load Model'
                 size_hint: None, None
-                size: nn_menu.width, 40
-                on_press: dt_screen.load_model()
+                size: dt_menu.width, 40
+                on_press: dt_screen.parent.show_load_model()
 
             GlobalButton:
-                id: load_data
                 text: 'Load Data'
                 size_hint: None, None
-                size: nn_menu.width, 40
-                on_press: dt_screen.load_data()
+                size: dt_menu.width, 40
+                on_press: dt_screen.parent.show_load_data()
 
             GlobalButton:
-                id: enter_data
-                text: 'Enter Data'
-                size_hint: None, None
-                size: nn_menu.width, 40
-
-            GlobalButton:
-                id: save_model
                 text: 'Save Model'
                 size_hint: None, None
-                size: nn_menu.width, 40
-                on_press: dt_screen.save_model()
+                size: dt_menu.width, 40
+                on_press: dt_screen.parent.show_save_model()
 
             GlobalButton:
-                id: clear
                 text: 'Clear'
                 size_hint: None, None
-                size: nn_menu.width, 40
-
+                size: dt_menu.width, 40
+                on_press: dt_screen.parent.clear()
 
         BoxLayout:
             id: dt_graphic
             orientation: 'vertical'
 
-        Sidebar:
-            id: right_bar
-            rows: 2
+        BoxLayout:
+            id: right_menu
+            orientation: 'vertical'
+            size_hint_x: 0.25
 
-            AnchorLayout:
-                id: right_menu
-                anchor_x: 'right'
-                anchor_y: 'bottom'
-                orientation: 'vertical'
-                size_hint: 0.25, 0.4
+            GlobalButton:
+                text: 'Train'
+                size_hint: None, None
+                size: right_menu.width, 40
+                disabled: True
+                on_press: dt_screen.parent.train()
 
-                BoxLayout:
-                    orientation: 'vertical'
+            GlobalButton:
+                text: 'Back'
+                size_hint: None, None
+                size: right_menu.width, 40
+                on_press: root.manager.current = 'main_screen'
 
-                    GlobalButton:
-                        id: train_predict
-                        text: 'Train'
-                        size_hint: None, None
-                        size: right_menu.width, 40
-                        disabled: True
-                        on_press: print(self.text)
-
-                    GlobalButton:
-                        id: back
-                        text: 'Back'
-                        size_hint: None, None
-                        size: right_menu.width, 40
-                        on_press: root.manager.current = 'main_screen'
-
-                    GlobalButton:
-                        id: help
-                        text: 'Help'
-                        size_hint: None, None
-                        size: right_menu.width, 40
-                        on_press: print(self.text)
+            GlobalButton:
+                text: 'Help'
+                size_hint: None, None
+                size: right_menu.width, 40
+                on_press: print(self.text)
