@@ -1,5 +1,5 @@
 from kivy.uix.floatlayout import FloatLayout
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, ListProperty
 
 
 class LoadDialog(FloatLayout):
@@ -10,4 +10,8 @@ class LoadDialog(FloatLayout):
 class SaveDialog(FloatLayout):
     save = ObjectProperty(None)
     text_input = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
+
+class GraphDialog(FloatLayout):
     cancel = ObjectProperty(None)

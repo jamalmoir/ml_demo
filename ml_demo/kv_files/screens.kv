@@ -55,6 +55,9 @@
     dec_amount: dec_amount
     classes: classes
     hidden_layer_size: hidden_layer_size
+    train_button: train_button
+    predict_button: predict_button
+    training_graph_button: training_graph_button
 
     BoxLayout:
         id: nn_screen
@@ -93,10 +96,16 @@
                 on_press: nn_screen.parent.show_load_model()
 
             GlobalButton:
-                text: 'Load Data'
+                text: 'Load Training Data'
                 size_hint: None, None
                 size: nn_menu.width, 40
-                on_press: nn_screen.parent.show_load_data()
+                on_press: nn_screen.parent.show_load_training_data()
+
+            GlobalButton:
+                text: 'Load Predicting Data'
+                size_hint: None, None
+                size: nn_menu.width, 40
+                on_press: nn_screen.parent.show_load_predict_data()
 
             GlobalButton:
                 text: 'Save Model'
@@ -145,8 +154,8 @@
                     id: alpha
                     min: 0
                     max: 1
-                    value: 0.5
-                    step: 0.05
+                    value: 0.01
+                    step: 0.005
 
                 GlobalLabel:
                     text: 'Epochs: {}'.format(epochs.value)
@@ -182,7 +191,7 @@
                     step: 0.00005
 
                 GlobalLabel:
-                    text: 'Classes: {}'.format(epochs.value)
+                    text: 'Classes: {}'.format(classes.value)
                     font_size: root.width * 0.001 * 14
 
                 ParamSlider:
@@ -193,7 +202,7 @@
                     step: 1
 
                 GlobalLabel:
-                    text: 'Hidden Layer Size: {}'.format(epochs.value)
+                    text: 'Hidden Layer Size: {}'.format(hidden_layer_size.value)
                     font_size: root.width * 0.001 * 14
 
                 ParamSlider:
@@ -208,15 +217,23 @@
                 orientation: 'vertical'
 
                 GlobalButton:
-                    id: train_predict
+                    id: train_button
                     text: 'Train'
                     size_hint: None, None
                     size: right_menu.width, 40
-                    disabled: False
+                    disabled: True
                     on_press: nn_screen.parent.train()
 
                 GlobalButton:
-                    id: training_graph
+                    id: predict_button
+                    text: 'Predict'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    disabled: True
+                    on_press: nn_screen.parent.train()
+
+                GlobalButton:
+                    id: training_graph_button
                     text: 'Training Graph'
                     size_hint: None, None
                     size: right_menu.width, 40
@@ -224,14 +241,12 @@
                     on_press: nn_screen.parent.display_training_graph()
 
                 GlobalButton:
-                    id: back
                     text: 'Back'
                     size_hint: None, None
                     size: right_menu.width, 40
                     on_press: root.manager.current = 'main_screen'
 
                 GlobalButton:
-                    id: help
                     text: 'Help'
                     size_hint: None, None
                     size: right_menu.width, 40
@@ -275,10 +290,16 @@
                 on_press: dt_screen.parent.show_load_model()
 
             GlobalButton:
-                text: 'Load Data'
+                text: 'Load Training Data'
                 size_hint: None, None
                 size: dt_menu.width, 40
-                on_press: dt_screen.parent.show_load_data()
+                on_press: dt_screen.parent.show_load_training_data()
+
+            GlobalButton:
+                text: 'Load Predicting Data'
+                size_hint: None, None
+                size: dt_menu.width, 40
+                on_press: dt_screen.parent.show_load_predict_data()
 
             GlobalButton:
                 text: 'Save Model'

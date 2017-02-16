@@ -1,3 +1,7 @@
+#:import Graph libs.garden.graph.Graph
+#:import MeshLinePlot libs.garden.graph.MeshLinePlot
+#:import TouchGraph libs.garden.touchgraph.TouchGraph
+
 <LoadDialog>:
     BoxLayout:
         size: root.size
@@ -24,6 +28,7 @@
         size: root.size
         pos: root.pos
         orientation: "vertical"
+
         FileChooserListView:
             id: filechooser
             on_selection: text_input.text = self.selection and self.selection[0] or ''
@@ -44,3 +49,27 @@
             Button:
                 text: "Save"
                 on_release: root.save(filechooser.path, text_input.text)
+
+<GraphDialog>:
+    graph: graph
+
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+
+        BoxLayout:
+            size_hint: [1, 0.8]
+            padding: 10
+
+            TouchGraph:
+                id: graph
+                x_labels: 'Epochs'
+                y_labels: 'Cost'
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
