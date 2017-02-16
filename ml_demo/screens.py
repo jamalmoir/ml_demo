@@ -6,8 +6,10 @@ import pandas as pd
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
+from libs.garden.graph import MeshLinePlot
+from libs.garden.touchgraph import TouchGraph
 
-from ml_demo.dialogs import LoadDialog, SaveDialog
+from ml_demo.dialogs import LoadDialog, SaveDialog, GraphDialog
 
 
 class MainScreen(Screen):
@@ -29,8 +31,13 @@ class ModelScreen(Screen):
     def dismiss_popup(self):
         self._popup.dismiss()
 
-    def show_load_data(self):
-        content = LoadDialog(load=self.load_data, cancel=self.dismiss_popup)
+    def show_load_training_data(self):
+        content = LoadDialog(load=self.load_training_data, cancel=self.dismiss_popup)
+        self._popup = Popup(title="Load Data", content=content, size_hint=(0.9, 0.9))
+        self._popup.open()
+
+    def show_load_predict_data(self):
+        content = LoadDialog(load=self.load_predict_data, cancel=self.dismiss_popup)
         self._popup = Popup(title="Load Data", content=content, size_hint=(0.9, 0.9))
         self._popup.open()
 
@@ -43,11 +50,15 @@ class ModelScreen(Screen):
         self._popup = Popup(title="Save Model", content=content, size_hint=(0.9, 0.9))
         self._popup.open()
 
-    def load_data(self, path, filename):
+    def load_training_data(self, path, filename):
         raw_data = pd.read_csv(filename[0]).as_matrix()
         self.data = self.split_data(raw_data)
 
+        self.train_button.disabled = False
         self.dismiss_popup()
+
+    def load_predict_data(self, path, filename):
+        self.data = pd.read_csv(filename[0]).as_matrix()
 
     def load_model(self, path, filename):
         with open(os.path.join(path, filename[0])) as stream:
@@ -79,6 +90,7 @@ class NeuralNetworkScreen(ModelScreen):
         self.cost = None
         self.costs = None
         self.model = None
+        self.accuracy = None
 
     def train(self):
         print("training")
@@ -90,19 +102,32 @@ class NeuralNetworkScreen(ModelScreen):
         classes = self.classes.value
         hidden_layer_size = self.hidden_layer_size.value
 
-        self.network = nn.NeuralNetwork(X=self.data['X'], y=self.data['y'], classes=classes,
-                                        hidden_layer_size=hidden_layer_size, lam=lam, activation_func='sigmoid')
+        self.network = nn.NeuralNetwork(X=self.data['X'], y=self.data['y'], classes=int(classes),
+                                        hidden_layer_size=int(hidden_layer_size), lam=lam, activation_func='sigmoid')
 
-        self.cost, self.costs, self.model = self.network.train(alpha=alpha, max_epochs=epochs, adaptive=adaptive,
+        self.cost, self.costs, self.model = self.network.train(alpha=alpha, max_epochs=int(epochs), adaptive=adaptive,
                                                                dec_amount=dec_amount)
 
-        print(self.cost)
+        self.training_graph_button.disabled = False
 
     def display_training_graph(self):
-        pass
+        points = []
+
+        for i, cost in enumerate(self.costs):
+            points.append(i)
+            points.append(cost)
+
+        content = GraphDialog(cancel=self.dismiss_popup)
+        content.graph.points = points
+        content.max_y = max(self.costs) + max(self.costs) * 0.01
+        content.min_y = min(self.costs) - min(self.costs) * 0.01
+        content.x_ticks = [x for x, _ in enumerate(self.costs)]
+
+        self._popup = Popup(title="Training Graph", content=content, size_hint=(0.9, 0.9))
+        self._popup.open()
 
     def predict(self):
-        pass
+        self.network.predict(self.data)
 
 
 class DecisionTreeScreen(ModelScreen):
@@ -110,4 +135,8 @@ class DecisionTreeScreen(ModelScreen):
         pass
 
     def predict(self):
+        pass
+
+    def load_model(self, path, filename):
+        #TODO: custom loading for decision tree model
         pass
