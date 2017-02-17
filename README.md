@@ -17,3 +17,7 @@ This application goes alongside my Machine learning library located at https://g
 - ~~Create the Decision Tree screen without function~~
 - Add functionality to Neural Network screen
 - Add functionality to Decision Tree screen
+
+## IMAGES ##
+![Image of Neural Network](img/ml_demo_nn.png)
+![Image of Neural Network Training Graph](img/ml_demo_nn_graph.png)
