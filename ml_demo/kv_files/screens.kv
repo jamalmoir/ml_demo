@@ -1,3 +1,4 @@
+#:import random random.random
 <MainScreen>
     BoxLayout:
         id: main_screen
@@ -58,6 +59,7 @@
     train_button: train_button
     predict_button: predict_button
     training_graph_button: training_graph_button
+    nn_graphic: nn_graphic
 
     BoxLayout:
         id: nn_screen
@@ -122,6 +124,13 @@
         BoxLayout:
             id: nn_graphic
             orientation: 'vertical'
+
+            #canvas:
+            #    Color:
+            #        rgba: random(), random(), random(), 0.5
+            #    Rectangle:
+            #        pos: self.pos
+            #        size: self.size
 
         BoxLayout:
             id: right_bar
