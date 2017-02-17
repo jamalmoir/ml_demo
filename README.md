@@ -19,5 +19,5 @@ This application goes alongside my Machine learning library located at https://g
 - Add functionality to Decision Tree screen
 
 ## IMAGES ##
-![Image of Neural Network](img/ml_demo_nn.png)
-![Image of Neural Network Training Graph](img/ml_demo_nn_graph.png)
+![Image of Neural Network](/img/ml_demo_nn.png)
+![Image of Neural Network Training Graph](/img/ml_demo_nn_graph.png)
