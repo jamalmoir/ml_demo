@@ -56,6 +56,7 @@
     dec_amount: dec_amount
     classes: classes
     hidden_layer_size: hidden_layer_size
+    train_test: train_test
     train_button: train_button
     predict_button: predict_button
     training_graph_button: training_graph_button
@@ -142,7 +143,7 @@
                 id: parameters
                 orientation: 'vertical'
                 padding: 10
-                spacing: 20
+                spacing: 10
 
                 GlobalLabel:
                     text: 'Lambda: {}'.format(lam.value)
@@ -167,7 +168,7 @@
                     step: 0.005
 
                 GlobalLabel:
-                    text: 'Epochs: {}'.format(epochs.value)
+                    text: 'Epochs: {}'.format(int(epochs.value))
                     font_size: root.width * 0.001 * 14
 
                 ParamSlider:
@@ -200,7 +201,7 @@
                     step: 0.00005
 
                 GlobalLabel:
-                    text: 'Classes: {}'.format(classes.value)
+                    text: 'Classes: {}'.format(int(classes.value))
                     font_size: root.width * 0.001 * 14
 
                 ParamSlider:
@@ -211,7 +212,7 @@
                     step: 1
 
                 GlobalLabel:
-                    text: 'Hidden Layer Size: {}'.format(hidden_layer_size.value)
+                    text: 'Hidden Layer Size: {}'.format(int(hidden_layer_size.value))
                     font_size: root.width * 0.001 * 14
 
                 ParamSlider:
@@ -220,6 +221,15 @@
                     max: 1000
                     value: 500
                     step: 50
+
+                GlobalLabel:
+                    text: 'Train/Test'
+                    font_size: root.width * 0.001 * 14
+
+                Switch:
+                    id: train_test
+                    active: True
+                    padding: 50
 
             BoxLayout:
                 id: right_menu
