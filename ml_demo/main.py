@@ -1,13 +1,9 @@
 from kivy.app import App
-from kivy.config import Config
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager
 
 from ml_demo.screens import MainScreen, NeuralNetworkScreen, DecisionTreeScreen
 
-Config.set('graphics', 'width', '1200')
-Config.set('graphics', 'height', '600')
-#Config.set('graphics', 'resizable', False)
 
 Builder.load_file('kv_files/mlgui.kv')
 
