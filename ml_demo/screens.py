@@ -10,6 +10,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.graphics import Color, Ellipse, Line
 
+from libs.garden.xpopup import XError
 from libs.garden.xpopup import XMessage
 from libs.garden.xpopup import XNotification
 from ml_demo.dialogs import LoadDialog, SaveDialog, GraphDialog
@@ -56,28 +57,44 @@ class ModelScreen(Screen):
         self._popup.open()
 
     def load_training_data(self, path, filename):
-        raw_data = pd.read_csv(filename[0]).as_matrix()
-        self.training_data = self.split_data(raw_data)
+        try:
+            raw_data = pd.read_csv(filename[0]).as_matrix()
+            self.training_data = self.split_data(raw_data)
 
-        self.train_button.disabled = False
-        self.dismiss_popup()
+            self.train_button.disabled = False
+            self.dismiss_popup()
+        except:
+            self.dismiss_popup()
+            XError(text='Error loading training data')
 
     def load_predict_data(self, path, filename):
-        self.predict_data = pd.read_csv(filename[0]).as_matrix()
-        self.dismiss_popup()
+        try:
+            self.predict_data = pd.read_csv(filename[0]).as_matrix()
+            self.dismiss_popup()
+        except:
+            self.dismiss_popup()
+            XError(text='Error loading predicting data!')
 
     def load_model(self, path, filename):
-        with open(os.path.join(path, filename[0]), 'rb') as stream:
-            self.model = pickle.load(stream)
+        try:
+            with open(os.path.join(path, filename[0]), 'rb') as stream:
+                self.model = pickle.load(stream)
 
-        self.predict_button.disabled = False
-        self.dismiss_popup()
+            if self.model: self.predict_button.disabled = False
+            self.dismiss_popup()
+        except:
+            self.dismiss_popup()
+            XError(text='Error loading model!')
 
     def save_model(self, path, filename):
-        with open(os.path.join(path, filename), 'wb') as stream:
-            pickle.dump(self.model, stream)
+        try:
+            with open(os.path.join(path, filename), 'wb') as stream:
+                pickle.dump(self.model, stream)
 
-        self.dismiss_popup()
+            self.dismiss_popup()
+        except:
+            self.dismiss_popup()
+            XError(text='Error saving model!')
 
     def clear(self):
         self.model = None
@@ -92,10 +109,6 @@ class ModelScreen(Screen):
         y = data[:, -1]
 
         return {'X': X, 'y': y}
-
-    def train(self):
-        XNotification(text='Training, please wait...', show_time=7, size_hint=(0.8, 0.4),
-                      title='Your Model is Training!')
 
 
 class NeuralNetworkScreen(ModelScreen):
@@ -123,8 +136,6 @@ class NeuralNetworkScreen(ModelScreen):
         self.draw_network()
 
     def train(self):
-        super().train()
-
         lam = self.lam.value
         alpha = self.alpha.value
         epochs = self.epochs.value
@@ -133,18 +144,22 @@ class NeuralNetworkScreen(ModelScreen):
         classes = self.classes.value
         hidden_layer_size = self.hidden_layer_size.value
 
-        self.network = nn.NeuralNetwork(X=self.training_data['X'], y=self.training_data['y'], classes=int(classes),
-                                        hidden_layer_size=int(hidden_layer_size), lam=lam, activation_func='sigmoid')
+        try:
+            self.network = nn.NeuralNetwork(X=self.training_data['X'], y=self.training_data['y'], classes=int(classes),
+                                            hidden_layer_size=int(hidden_layer_size), lam=lam,
+                                            activation_func='sigmoid')
 
-        self.cost, self.costs, self.model = self.network.train(alpha=alpha, max_epochs=int(epochs), adaptive=adaptive,
-                                                               dec_amount=dec_amount)
+            self.cost, self.costs, self.model = self.network.train(alpha=alpha, max_epochs=int(epochs),
+                                                                   adaptive=adaptive, dec_amount=dec_amount)
 
-        XNotification(text='Training complete!', show_time=7, size_hint=(0.8, 0.4),
-                      title='Your Model Has Been Trained!')
+            XNotification(text='Training complete!', show_time=5, size_hint=(0.8, 0.4),
+                          title='Your Model Has Been Trained!')
 
-        self.training_graph_button.disabled = False
-        self.predict_button.disabled = False
-        self.draw_network()
+            if self.predict_data: self.predict_button.disabled = False
+            self.training_graph_button.disabled = False
+            self.draw_network()
+        except:
+            XError(text='Error training model!')
 
     def display_training_graph(self):
         points = []
@@ -163,9 +178,12 @@ class NeuralNetworkScreen(ModelScreen):
         self._popup.open()
 
     def predict(self):
-        prediction = self.network.predict(self.predict_data)
+        try:
+            prediction = self.network.predict(self.predict_data)
 
-        XMessage(text='Your model predicts {pred}'.format(pred=prediction), title='Prediction')
+            XMessage(text='Your model predicts {pred}'.format(pred=prediction), title='Prediction')
+        except:
+            XError(text='Error making prediction!')
 
     def get_bottom_padding(self, d, num_nodes, base_y, y_offset):
         return base_y + self.nn_graphic.size[1] / 2 - ((num_nodes * d + (num_nodes - 1) * y_offset) / 2)
