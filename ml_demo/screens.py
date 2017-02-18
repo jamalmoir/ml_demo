@@ -13,8 +13,8 @@ from kivy.graphics import Color, Ellipse, Line
 
 from libs.garden.xpopup import XError
 from libs.garden.xpopup import XMessage
-from libs.garden.xpopup import XNotification
 from ml_demo.dialogs import LoadDialog, SaveDialog, GraphDialog
+from ml_demo.utils.data_tools import split_data
 
 
 class MainScreen(Screen):
@@ -60,7 +60,7 @@ class ModelScreen(Screen):
     def load_training_data(self, path, filename):
         try:
             raw_data = pd.read_csv(filename[0]).as_matrix()
-            self.training_data = self.split_data(raw_data, train_test=self.train_test)
+            self.training_data = split_data(raw_data, train_test=self.train_test)
 
             self.train_button.disabled = False
             self.dismiss_popup()
@@ -110,24 +110,6 @@ class ModelScreen(Screen):
         self.predict_button.disabled = True
         self.train_button.disabled = False
 
-    def split_data(self, data, train_test=False):
-        X = data[:, :-1]
-        y = data[:, -1]
-
-        if train_test:
-            np.random.seed(0)
-            indices = np.random.permutation(len(X))
-            train_size = int(np.round(X.shape[0] / 100 * 15))
-            print(train_size)
-            X_train = X[indices[:-train_size]]
-            y_train = y[indices[:-train_size]]
-            X_test = X[indices[-train_size:]]
-            y_test = y[indices[-train_size:]]
-
-            return {'X': X_train, 'y': y_train, 'X_test': X_test, 'y_test': y_test}
-        else:
-            return {'X': X, 'y': y}
-
 
 class NeuralNetworkScreen(ModelScreen):
     def __init__(self, **kw):
@@ -174,7 +156,7 @@ class NeuralNetworkScreen(ModelScreen):
                 accuracy = self.get_accuracy()
 
                 XMessage(text='Training complete! Your Model\'s accuracy is {acc}%.'.format(acc=int(accuracy)),
-                              title='Your Model Has Been Trained!')
+                         title='Your Model Has Been Trained!')
             else:
                 XMessage(text='Training complete!', title='Your Model Has Been Trained!')
 
