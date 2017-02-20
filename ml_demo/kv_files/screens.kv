@@ -54,7 +54,6 @@
     epochs: epochs
     adaptive: adaptive
     dec_amount: dec_amount
-    classes: classes
     hidden_layer_size: hidden_layer_size
     train_test: train_test
     train_button: train_button
@@ -126,13 +125,6 @@
             id: nn_graphic
             orientation: 'vertical'
 
-            #canvas:
-            #    Color:
-            #        rgba: random(), random(), random(), 0.5
-            #    Rectangle:
-            #        pos: self.pos
-            #        size: self.size
-
         BoxLayout:
             id: right_bar
             orientation: 'vertical'
@@ -199,17 +191,6 @@
                     max: 0.0005
                     value: 0.0001
                     step: 0.00005
-
-                GlobalLabel:
-                    text: 'Classes: {}'.format(int(classes.value))
-                    font_size: root.width * 0.001 * 14
-
-                ParamSlider:
-                    id: classes
-                    min: 0
-                    max: 100
-                    value: 3
-                    step: 1
 
                 GlobalLabel:
                     text: 'Hidden Layer Size: {}'.format(int(hidden_layer_size.value))
