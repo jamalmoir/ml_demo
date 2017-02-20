@@ -2,10 +2,11 @@ import os
 import pickle
 from collections import namedtuple
 
-import ml_components.models.neural_network as nn
 import numpy as np
 import pandas as pd
 
+from ml_components.models import neural_network
+from ml_components.models import decision_tree
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
@@ -15,6 +16,7 @@ from libs.garden.xpopup import XError
 from libs.garden.xpopup import XMessage
 from ml_demo.dialogs import LoadDialog, SaveDialog, GraphDialog
 from ml_demo.utils.data_tools import split_data
+from ml_demo.utils.graph_tools import get_bottom_padding
 
 
 class MainScreen(Screen):
@@ -116,23 +118,25 @@ class NeuralNetworkScreen(ModelScreen):
         super().__init__(**kw)
 
         self.network = None
-        self.cost = None
-        self.costs = None
-        self.accuracy = None
+        self.cost = 0
+        self.costs = []
+        self.accuracy = 0
 
     def clear(self):
         super().clear()
 
         self.network = None
-        self.cost = None
-        self.costs = None
-        self.accuracy = None
+        self.cost = 0
+        self.costs = []
+        self.accuracy = 0
+        self.train_button.disabled = True
+        self.predict_button.disabled = True
         self.training_graph_button.disabled = True
 
     def load_model(self, path, filename):
         super().load_model(path, filename)
 
-        self.network = nn.NeuralNetwork(model=self.model)
+        self.network = neural_network.NeuralNetwork(model=self.model)
         self.draw_network()
 
     def train(self):
@@ -141,21 +145,24 @@ class NeuralNetworkScreen(ModelScreen):
         epochs = self.epochs.value
         adaptive = self.adaptive.value
         dec_amount = self.dec_amount.value
-        classes = self.classes.value
         hidden_layer_size = self.hidden_layer_size.value
 
         try:
-            self.network = nn.NeuralNetwork(X=self.training_data['X'], y=self.training_data['y'], classes=int(classes),
-                                            hidden_layer_size=int(hidden_layer_size), lam=lam,
-                                            activation_func='sigmoid')
+            self.network = neural_network.NeuralNetwork(hidden_layer_size=int(hidden_layer_size),
+                                                        activation_func='sigmoid')
 
-            self.cost, self.costs, self.model = self.network.train(alpha=alpha, max_epochs=int(epochs),
-                                                                   adaptive=adaptive, dec_amount=dec_amount)
+            self.cost, self.costs, self.model = self.network.train(X=self.training_data['X'],
+                                                                   y=self.training_data['y'],
+                                                                   alpha=alpha,
+                                                                   max_epochs=int(epochs),
+                                                                   lam=lam,
+                                                                   adaptive=adaptive,
+                                                                   dec_amount=dec_amount)
 
             if self.train_test:
                 accuracy = self.get_accuracy()
 
-                XMessage(text='Training complete! Your Model\'s accuracy is {acc}%.'.format(acc=int(accuracy)),
+                XMessage(text='Training complete! Your Model\'s accuracy is {acc:.2f}%.'.format(acc=accuracy),
                          title='Your Model Has Been Trained!')
             else:
                 XMessage(text='Training complete!', title='Your Model Has Been Trained!')
@@ -198,9 +205,6 @@ class NeuralNetworkScreen(ModelScreen):
         except Exception as e:
             XError(text='Error making prediction!: {}'.format(e))
 
-    def get_bottom_padding(self, d, num_nodes, base_y, y_offset):
-        return base_y + self.nn_graphic.size[1] / 2 - ((num_nodes * d + (num_nodes - 1) * y_offset) / 2)
-
     def draw_network(self):
         self.nn_graphic.canvas.clear()  # Make sure canvas is empty.
 
@@ -214,8 +218,8 @@ class NeuralNetworkScreen(ModelScreen):
             else int(self.network.input_layer_size / 10)
         hidden_count = self.network.hidden_layer_size if self.network.hidden_layer_size <= 50 \
             else int(self.network.hidden_layer_size / 10)
-        output_count = self.network.label_count if self.network.label_count <= 50 \
-            else int(self.network.label_count / 10)
+        output_count = self.network.output_layer_size if self.network.output_layer_size <= 50 \
+            else int(self.network.output_layer_size / 10)
 
         d = (self.nn_graphic.size[1] * 0.75) / max([input_count, hidden_count, output_count])  # Node diameter.
         color = (0.22, 0.22, 0.22, 1)  # Graph color.
@@ -228,7 +232,12 @@ class NeuralNetworkScreen(ModelScreen):
         # Calculate input layer node positions.
         for i in range(input_count):
             # Padding below the set of node to centre them.
-            bottom_padding = self.get_bottom_padding(d=d, num_nodes=input_count, base_y=base_y, y_offset=y_offset)
+            bottom_padding = get_bottom_padding(height=self.nn_graphic.size[1],
+                                                d=d,
+                                                num_nodes=input_count,
+                                                base_y=base_y,
+                                                y_offset=y_offset)
+
             y = bottom_padding + (y_offset * i) + (d * i)
 
             graph_nodes[0].append(GraphNode(x=base_x, y=y))
@@ -236,7 +245,12 @@ class NeuralNetworkScreen(ModelScreen):
         # Calculate hidden layer node positions.
         for i in range(hidden_count):
             # Padding below the set of node to centre them.
-            bottom_padding = self.get_bottom_padding(d=d, num_nodes=hidden_count, base_y=base_y, y_offset=y_offset)
+            bottom_padding = get_bottom_padding(height=self.nn_graphic.size[1],
+                                                d=d,
+                                                num_nodes=hidden_count,
+                                                base_y=base_y,
+                                                y_offset=y_offset)
+
             y = bottom_padding + (y_offset * i) + (d * i)
             x = base_x + x_offset
 
@@ -245,7 +259,12 @@ class NeuralNetworkScreen(ModelScreen):
         # Calculate output layer node positions.
         for i in range(output_count):
             # Padding below the set of node to centre them.
-            bottom_padding = self.get_bottom_padding(d=d, num_nodes=output_count, base_y=base_y, y_offset=y_offset)
+            bottom_padding = get_bottom_padding(height=self.nn_graphic.size[1],
+                                                d=d,
+                                                num_nodes=output_count,
+                                                base_y=base_y,
+                                                y_offset=y_offset)
+
             x = base_x + 2 * x_offset
             y = bottom_padding + (y_offset * i) + (d * i)
 
@@ -281,8 +300,59 @@ class NeuralNetworkScreen(ModelScreen):
 
 
 class DecisionTreeScreen(ModelScreen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+        self.decision_tree = None
+        self.accuracy = 0
+
+    def clear(self):
+        super().clear()
+
+        self.decision_tree = None
+        self.accuracy = 0
+        self.train_button.disabled = True
+        self.predict_button.disabled = True
+
+    def load_model(self, path, filename):
+        super().load_model(path, filename)
+
+        self.decision_tree = decision_tree.DecisionTree(model=self.model)
+        self.draw_tree()
+
     def train(self):
-        pass
+        try:
+            self.decision_tree = decision_tree.DecisionTree()
+            self.model = self.decision_tree.train(data=self.training_data)
+
+            if self.train_test:
+                accuracy = self.get_accuracy()
+
+                XMessage(text='Training complete! Your Model\'s accuracy is {acc:.2f%}%.'.format(acc=int(accuracy)),
+                         title='Your Model Has Been Trained!')
+            else:
+                XMessage(text='Training complete!', title='Your Model Has Been Trained!')
+
+            if self.predict_data:
+                self.predict_button.disabled = False
+
+            self.draw_tree()
+
+        except Exception as e:
+            XError(text='Error training model!: {}'.format(e))
 
     def predict(self):
-        pass
+        try:
+            prediction = self.decision_tree.predict(self.predict_data)
+
+            XMessage(text='Your model predicts {pred}'.format(pred=prediction), title='Prediction')
+        except Exception as e:
+            XError(text='Error making prediction!: {}'.format(e))
+
+    def draw_tree(self):
+        self.nn_graphic.canvas.clear()  # Make sure canvas is empty.
+
+        TreeNode = namedtuple('TreeNode', ['x', 'y'])
+        TreeLine = namedtuple('TreeLine', ['x1', 'y1', 'x2', 'y2'])
+        tree_nodes = [[], [], []]
+        tree_lines = [[], []]

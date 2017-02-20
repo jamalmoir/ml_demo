@@ -192,41 +192,6 @@ class TouchGraph(FloatLayout):
 
         return coords
 
-    def on_touch_down(self, touch):
-        if self.collide_point(*self.to_local(*touch.pos)):
-            for i, p in enumerate(zip(self.point_coords[::2], self.point_coords[1::2])):
-                pos_touch = touch.pos
-
-                if p[0] - 5 * self.line_width < pos_touch[0] < p[0] + 5 * self.line_width \
-                        and p[1] - 5 * self.line_width < pos_touch[1] < p[1] + 5 * self.line_width:
-                    self.current_point = i + 1
-                    return True
-
-            return super(TouchGraph, self).on_touch_down(touch)
-
-    def on_touch_up(self, touch):
-        if self.collide_point(*self.to_local(*touch.pos)):
-            if self.current_point:
-                self.current_point = None
-
-                return True
-
-            return super(TouchGraph, self).on_touch_up(touch)
-
-    def on_touch_move(self, touch):
-        # do not check collision here since the move path could be outside of our widget
-        if self.current_point:
-            c = self.current_point
-
-            if c:
-                if 0 < self.y_for_graph_y(touch.pos[1] - self.pos[1]) < self.max[1]:
-                    self.points[(c - 1) * 2 + 1] = self.y_for_graph_y(touch.pos[1] - self.pos[1])
-                    self.update_canvas()
-
-                    return True
-
-            return super(TouchGraph, self).on_touch_move(touch)
-
     def x_for_graph_x(self, x):
         return (x - self.padding_x) / float(self.width - 2 * self.padding_x) * self.max[0]
 
@@ -243,37 +208,3 @@ class TouchGraph(FloatLayout):
 
     def graph_y_for_y(self, y):
         return y / float(self.max[1]) * (self.height - 2 * self.padding_y) + self.padding_y
-
-
-if __name__ == "__main__":
-    from kivy.app import App
-    from kivy.uix.boxlayout import BoxLayout
-
-
-    class DemoGraph(TouchGraph):
-        # this draws a circle on the graph on a touch_down event using the static y_for_x function
-        def on_touch_down(self, touch):
-            super(DemoGraph, self).on_touch_down(touch)
-            with self.canvas:
-                Color(1, 0, 0, 1)
-                x = touch.pos[0] - self.pos[0]
-                y = TouchGraph.y_for_x(self.x_for_graph_x(x), self.points)
-                Ellipse(pos=(self.x + x, self.y + self.graph_y_for_y(y)), size=(10, 10))
-
-
-    class StandaloneApp(App):
-        def build(self):
-            box = BoxLayout()
-            graph = DemoGraph(points=[0, .2, 1, 0.25, 2, .4, 5, .5, 10, .6, 30, .5],
-                              font_size=30,
-                              line_width=5,
-                              x_labels=['A', 'B', 'C', 'D'],
-                              x_ticks=[0, 10, 20, 30],
-                              y_ticks=[.1, .2, .5, .9],
-                              max_y=100,
-                              min_y=30)
-            box.add_widget(graph)
-            return box
-
-
-    StandaloneApp().run()
