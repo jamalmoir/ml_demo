@@ -6,16 +6,16 @@ This application goes alongside my Machine learning library located at https://g
 
 **IMPLEMENTED**
 - Main screen
+- Neural Network GUI
 
 **TODO**
-- Neural Network GUI
 - Decision Tree GUI
 
 **ROADMAP**
 - ~~Create the main screen~~
 - ~~Create the Neural Network screen without function~~
 - ~~Create the Decision Tree screen without function~~
-- Add functionality to Neural Network screen
+- ~~Add functionality to Neural Network screen~~
 - Add functionality to Decision Tree screen
 
 ## IMAGES ##
