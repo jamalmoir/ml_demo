@@ -108,7 +108,6 @@ class ModelScreen(Screen):
         self.model = None
         self.training_data = None
         self.predict_data = None
-        self.nn_graphic.canvas.clear()
         self.predict_button.disabled = True
         self.train_button.disabled = False
 
@@ -125,6 +124,7 @@ class NeuralNetworkScreen(ModelScreen):
     def clear(self):
         super().clear()
 
+        self.nn_graphic.canvas.clear()
         self.network = None
         self.cost = 0
         self.costs = []
@@ -309,6 +309,7 @@ class DecisionTreeScreen(ModelScreen):
     def clear(self):
         super().clear()
 
+        self.dt_graphic.canvas.clear()
         self.decision_tree = None
         self.accuracy = 0
         self.train_button.disabled = True
@@ -318,17 +319,17 @@ class DecisionTreeScreen(ModelScreen):
         super().load_model(path, filename)
 
         self.decision_tree = decision_tree.DecisionTree(model=self.model)
-        self.draw_tree()
+        #self.draw_tree()
 
     def train(self):
         try:
             self.decision_tree = decision_tree.DecisionTree()
-            self.model = self.decision_tree.train(data=self.training_data)
+            self.model = self.decision_tree.train(X=self.training_data['X'], y=self.training_data['y'])
 
             if self.train_test:
                 accuracy = self.get_accuracy()
 
-                XMessage(text='Training complete! Your Model\'s accuracy is {acc:.2f%}%.'.format(acc=int(accuracy)),
+                XMessage(text='Training complete! Your Model\'s accuracy is {acc:.2f}%.'.format(acc=int(accuracy)),
                          title='Your Model Has Been Trained!')
             else:
                 XMessage(text='Training complete!', title='Your Model Has Been Trained!')
@@ -336,7 +337,7 @@ class DecisionTreeScreen(ModelScreen):
             if self.predict_data:
                 self.predict_button.disabled = False
 
-            self.draw_tree()
+            #self.draw_tree()
 
         except Exception as e:
             XError(text='Error training model!: {}'.format(e))
@@ -349,10 +350,45 @@ class DecisionTreeScreen(ModelScreen):
         except Exception as e:
             XError(text='Error making prediction!: {}'.format(e))
 
-    def draw_tree(self):
-        self.nn_graphic.canvas.clear()  # Make sure canvas is empty.
+    def get_accuracy(self):
+        pred = self.decision_tree.predict(self.training_data['X_test'])
+        accuracy = np.sum(self.training_data['y_test'] == pred, axis=0) / self.training_data['X_test'].shape[0] * 100
 
+        return accuracy
+
+    def draw_tree(self):
+        self.dt_graphic.canvas.clear()  # Make sure canvas is empty.
+
+        max_breadth = self.decision_tree.max_breadth
+        depth = self.decision_tree.depth
+
+        tree_nodes = self.get_coords(self.model)
+        tree_lines = []
+
+        d = (self.dt_graphic.size[1] * 0.75) / max_breadth  # Node diameter.
+        color = (0.22, 0.22, 0.22, 1)  # Graph color.
+        base_x = self.dt_graphic.pos[0]  # The x coord of the bottom left corner of the graphic area.
+        base_y = self.dt_graphic.pos[1]  # The y coord of the bottom left corner of the graphic area.
+        x_offset = (self.dt_graphic.size[0] - (max_breadth * d)) / max_breadth  # Space between nodes on the y axis.
+        y_offset = (self.dt_graphic.size[1] - (depth * d)) / depth  # Space between nodes on the x axis.
+
+        with self.dt_graphic.canvas:
+            for node in tree_nodes:
+                Ellipse(pos=(node.x, node.y), size=(d, d))
+
+    def get_coords(self, model, depth=0, nodes=[]):
         TreeNode = namedtuple('TreeNode', ['x', 'y'])
         TreeLine = namedtuple('TreeLine', ['x1', 'y1', 'x2', 'y2'])
-        tree_nodes = [[], [], []]
-        tree_lines = [[], []]
+
+        x = -1
+        y = depth
+        nodes.append(TreeNode(x=x, y=y))
+
+        if model[0] == -1:
+            return nodes
+        else:
+            for node in model[1:]:
+                nodes.extend(self.get_coords(node))
+
+
+

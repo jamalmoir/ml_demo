@@ -253,6 +253,11 @@
                     on_press: print(self.text)
 
 <DecisionTreeScreen>
+    train_test: train_test
+    train_button: train_button
+    predict_button: predict_button
+    dt_graphic: dt_graphic
+
     BoxLayout:
         id: dt_screen
         orientation: 'horizontal'
@@ -318,25 +323,54 @@
             orientation: 'vertical'
 
         BoxLayout:
-            id: right_menu
+            id: right_bar
             orientation: 'vertical'
             size_hint_x: 0.25
+            spacing: 0
 
-            GlobalButton:
-                text: 'Train'
-                size_hint: None, None
-                size: right_menu.width, 40
-                disabled: True
-                on_press: dt_screen.parent.train()
+            BoxLayout:
+                id: parameters
+                orientation: 'vertical'
+                padding: 10
+                spacing: 10
 
-            GlobalButton:
-                text: 'Back'
-                size_hint: None, None
-                size: right_menu.width, 40
-                on_press: root.manager.current = 'main_screen'
+                GlobalLabel:
+                    text: 'Train/Test'
+                    font_size: root.width * 0.001 * 14
 
-            GlobalButton:
-                text: 'Help'
-                size_hint: None, None
-                size: right_menu.width, 40
-                on_press: print(self.text)
+                Switch:
+                    id: train_test
+                    active: True
+                    padding: 50
+
+            BoxLayout:
+                id: right_menu
+                orientation: 'vertical'
+
+                GlobalButton:
+                    id: train_button
+                    text: 'Train'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    disabled: True
+                    on_press: dt_screen.parent.train()
+
+                GlobalButton:
+                    id: predict_button
+                    text: 'Predict'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    disabled: True
+                    on_press: dt_screen.parent.predict()
+
+                GlobalButton:
+                    text: 'Back'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    on_press: root.manager.current = 'main_screen'
+
+                GlobalButton:
+                    text: 'Help'
+                    size_hint: None, None
+                    size: right_menu.width, 40
+                    on_press: print(self.text)
