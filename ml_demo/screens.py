@@ -5,18 +5,20 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 
-from ml_components.models import neural_network
-from ml_components.models import decision_tree
+from ml_components.models import neural_network, decision_tree
+
+from ml_demo.text import text_eng
+from ml_demo.dialogs import LoadDialog, SaveDialog, GraphDialog
+from ml_demo.utils.data_tools import split_data
+from ml_demo.utils.graph_tools import get_bottom_padding, TreeTraverse
+
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.graphics import Color, Ellipse, Line
+from kivy.clock import Clock
 
-from libs.garden.xpopup import XError
-from libs.garden.xpopup import XMessage
-from ml_demo.dialogs import LoadDialog, SaveDialog, GraphDialog
-from ml_demo.utils.data_tools import split_data
-from ml_demo.utils.graph_tools import get_bottom_padding
+from libs.garden.xpopup import XError, XNotification, XMessage
 
 
 class MainScreen(Screen):
@@ -111,6 +113,11 @@ class ModelScreen(Screen):
         self.predict_button.disabled = True
         self.train_button.disabled = False
 
+    def begin_training(self):
+        self.loading_pop = XNotification(title='Training...', text='Your model is training, please wait...')
+        self.loading_pop.open()
+        Clock.schedule_once(self.train, 0)
+
 
 class NeuralNetworkScreen(ModelScreen):
     def __init__(self, **kw):
@@ -139,7 +146,7 @@ class NeuralNetworkScreen(ModelScreen):
         self.network = neural_network.NeuralNetwork(model=self.model)
         self.draw_network()
 
-    def train(self):
+    def train(self, *args):
         lam = self.lam.value
         alpha = self.alpha.value
         epochs = self.epochs.value
@@ -158,6 +165,7 @@ class NeuralNetworkScreen(ModelScreen):
                                                                    lam=lam,
                                                                    adaptive=adaptive,
                                                                    dec_amount=dec_amount)
+            self.loading_pop.dismiss()
 
             if self.train_test:
                 accuracy = self.get_accuracy()
@@ -173,6 +181,7 @@ class NeuralNetworkScreen(ModelScreen):
             self.training_graph_button.disabled = False
             self.draw_network()
         except Exception as e:
+            self.loading_pop.dismiss()
             XError(text='Error training model!: {}'.format(e))
 
     def get_accuracy(self):
@@ -214,12 +223,12 @@ class NeuralNetworkScreen(ModelScreen):
         graph_lines = [[], []]
 
         # Get the number of nodes in each layer and limit them so the network graph is legible.
-        input_count = self.network.input_layer_size if self.network.input_layer_size <= 50 \
-            else int(self.network.input_layer_size / 10)
-        hidden_count = self.network.hidden_layer_size if self.network.hidden_layer_size <= 50 \
-            else int(self.network.hidden_layer_size / 10)
-        output_count = self.network.output_layer_size if self.network.output_layer_size <= 50 \
-            else int(self.network.output_layer_size / 10)
+        input_count = self.network._input_layer_size if self.network._input_layer_size <= 50 \
+            else int(self.network._input_layer_size / 10)
+        hidden_count = self.network._hidden_layer_size if self.network._hidden_layer_size <= 50 \
+            else int(self.network._hidden_layer_size / 10)
+        output_count = self.network._output_layer_size if self.network._output_layer_size <= 50 \
+            else int(self.network._output_layer_size / 10)
 
         d = (self.nn_graphic.size[1] * 0.75) / max([input_count, hidden_count, output_count])  # Node diameter.
         color = (0.22, 0.22, 0.22, 1)  # Graph color.
@@ -227,7 +236,7 @@ class NeuralNetworkScreen(ModelScreen):
         base_y = self.nn_graphic.pos[1]  # The y coord of the bottom left corner of the graphic area.
         x_offset = (self.nn_graphic.size[0] * 0.5) - d / 2  # Space between nodes on the x axis.
         y_offset = (self.nn_graphic.size[1] - (max([input_count, hidden_count, output_count]) * d)) / \
-                   max([input_count, hidden_count, output_count])  # Space between nodes on the y axis.
+            max([input_count, hidden_count, output_count])  # Space between nodes on the y axis.
 
         # Calculate input layer node positions.
         for i in range(input_count):
@@ -319,12 +328,14 @@ class DecisionTreeScreen(ModelScreen):
         super().load_model(path, filename)
 
         self.decision_tree = decision_tree.DecisionTree(model=self.model)
-        #self.draw_tree()
+        # self.draw_tree()
 
-    def train(self):
+    def train(self, *args):
         try:
             self.decision_tree = decision_tree.DecisionTree()
             self.model = self.decision_tree.train(X=self.training_data['X'], y=self.training_data['y'])
+
+            self.loading_pop.dismiss()
 
             if self.train_test:
                 accuracy = self.get_accuracy()
@@ -337,9 +348,10 @@ class DecisionTreeScreen(ModelScreen):
             if self.predict_data:
                 self.predict_button.disabled = False
 
-            #self.draw_tree()
+            # self.draw_tree()
 
         except Exception as e:
+            self.loading_pop.dismiss()
             XError(text='Error training model!: {}'.format(e))
 
     def predict(self):
@@ -357,38 +369,61 @@ class DecisionTreeScreen(ModelScreen):
         return accuracy
 
     def draw_tree(self):
-        self.dt_graphic.canvas.clear()  # Make sure canvas is empty.
+        tt = TreeTraverse()
+        nodes, edges = tt.get_nodes_and_edges(model=self.model)
+        print(nodes)
+        # dot_data = tree.export_graphviz(clf, out_file=None)
+        # graph = pydotplus.graph_from_dot_data(dot_data)
+        # graph.write_pdf("iris.pdf")
 
-        max_breadth = self.decision_tree.max_breadth
-        depth = self.decision_tree.depth
+#    def draw_tree2(self):
+#        self.dt_graphic.canvas.clear()  # Make sure canvas is empty.
+#
+#        max_breadth = self.decision_tree.max_breadth
+#        depth = self.decision_tree.depth
+#
+#        tree_nodes = self.get_coords(self.model)
+#        tree_lines = []
+#
+#        d = (self.dt_graphic.size[1] * 0.75) / max_breadth  # Node diameter.
+#        color = (0.22, 0.22, 0.22, 1)  # Graph color.
+#        base_x = self.dt_graphic.pos[0]  # The x coord of the bottom left corner of the graphic area.
+#        base_y = self.dt_graphic.pos[1]  # The y coord of the bottom left corner of the graphic area.
+#        x_offset = (self.dt_graphic.size[0] - (max_breadth * d)) / max_breadth  # Space between nodes on the y axis.
+#        y_offset = (self.dt_graphic.size[1] - (depth * d)) / depth  # Space between nodes on the x axis.
+#
+#        with self.dt_graphic.canvas:
+#            for node in tree_nodes:
+#                Ellipse(pos=(node.x, node.y), size=(d, d))
 
-        tree_nodes = self.get_coords(self.model)
-        tree_lines = []
+#    def get_coords(self, model, depth=0, nodes=[]):
+#        TreeNode = namedtuple('TreeNode', ['x', 'y'])
+#        TreeLine = namedtuple('TreeLine', ['x1', 'y1', 'x2', 'y2'])
+#
+#        x = -1
+#        y = depth
+#        nodes.append(TreeNode(x=x, y=y))
+#
+#        if model[0] == -1:
+#            return nodes
+#        else:
+#            for node in model[1:]:
+#                nodes.extend(self.get_coords(node))
 
-        d = (self.dt_graphic.size[1] * 0.75) / max_breadth  # Node diameter.
-        color = (0.22, 0.22, 0.22, 1)  # Graph color.
-        base_x = self.dt_graphic.pos[0]  # The x coord of the bottom left corner of the graphic area.
-        base_y = self.dt_graphic.pos[1]  # The y coord of the bottom left corner of the graphic area.
-        x_offset = (self.dt_graphic.size[0] - (max_breadth * d)) / max_breadth  # Space between nodes on the y axis.
-        y_offset = (self.dt_graphic.size[1] - (depth * d)) / depth  # Space between nodes on the x axis.
+class HelpScreen(Screen):
+    pass
 
-        with self.dt_graphic.canvas:
-            for node in tree_nodes:
-                Ellipse(pos=(node.x, node.y), size=(d, d))
+class NeuralNetworkHelpScreen(HelpScreen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
 
-    def get_coords(self, model, depth=0, nodes=[]):
-        TreeNode = namedtuple('TreeNode', ['x', 'y'])
-        TreeLine = namedtuple('TreeLine', ['x1', 'y1', 'x2', 'y2'])
-
-        x = -1
-        y = depth
-        nodes.append(TreeNode(x=x, y=y))
-
-        if model[0] == -1:
-            return nodes
-        else:
-            for node in model[1:]:
-                nodes.extend(self.get_coords(node))
+        self.help_title.text = 'Neural Network Help'
+        self.help_text.text = text_eng['nn_help_text']
 
 
+class DecisionTreeHelpScreen(HelpScreen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
 
+        self.help_title.text = 'Decision Tree Help'
+        self.help_text.text = text_eng['dt_help_text']
