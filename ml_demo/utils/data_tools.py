@@ -13,9 +13,9 @@ def split_data(data: np.array, train_test: bool = False) -> dict:
         train_size = int(np.round(X.shape[0] / 100 * 15))
         print(train_size)
         X_train = X[indices[:-train_size]]
-        y_train = y[indices[:-train_size]]
+        y_train = y[indices[:-train_size]].astype(int)
         X_test = X[indices[-train_size:]]
-        y_test = y[indices[-train_size:]]
+        y_test = y[indices[-train_size:]].astype(int)
 
         return {'X': X_train, 'y': y_train, 'X_test': X_test, 'y_test': y_test}
     else:
