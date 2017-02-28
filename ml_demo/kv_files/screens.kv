@@ -1,4 +1,5 @@
 #:import random random.random
+#:import text_eng ml_demo.text.text_eng
 <MainScreen>
     BoxLayout:
         id: main_screen
@@ -25,7 +26,7 @@
                 valign: 'top'
 
             GlobalLabel:
-                text: 'Instructions:\nSelect a model from the menu to the right, enter or load data and experiment using the different algorithms to train models and make predictions, or load an already trained model to start using it to predict! If you need help click \'help\' at any time.'
+                text: text_eng['main_screen_text']
                 font_size: root.width * 0.001 * 24
                 text_size: self.size
                 padding: 0, 20
@@ -222,7 +223,7 @@
                     size_hint: None, None
                     size: right_menu.width, 40
                     disabled: True
-                    on_press: nn_screen.parent.train()
+                    on_press: nn_screen.parent.begin_training()
 
                 GlobalButton:
                     id: predict_button
@@ -250,7 +251,7 @@
                     text: 'Help'
                     size_hint: None, None
                     size: right_menu.width, 40
-                    on_press: print(self.text)
+                    on_press: root.manager.current = 'nn_help'
 
 <DecisionTreeScreen>
     train_test: train_test
@@ -353,7 +354,7 @@
                     size_hint: None, None
                     size: right_menu.width, 40
                     disabled: True
-                    on_press: dt_screen.parent.train()
+                    on_press: dt_screen.parent.begin_training()
 
                 GlobalButton:
                     id: predict_button
@@ -373,4 +374,46 @@
                     text: 'Help'
                     size_hint: None, None
                     size: right_menu.width, 40
-                    on_press: print(self.text)
+                    on_press: root.manager.current = 'dt_help'
+
+<HelpScreen>
+    help_title: help_title
+    help_text: help_text
+
+    BoxLayout:
+        id: help_screen
+        orientation: 'horizontal'
+        padding: 50, 50, 0, 0
+        spacing: 50
+
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: 50
+
+            GlobalLabel:
+                id: help_title
+                size_hint_y: 0.2
+                text: ''
+                font_size: root.width * 0.001 * 60
+                text_size: self.size
+                valign: 'top'
+
+            GlobalLabel:
+                id: help_text
+                text: ''
+                font_size: root.width * 0.001 * 16
+                text_size: self.size
+                padding: 0, 20
+                valign: 'bottom'
+
+        BoxLayout:
+            id: right_menu
+            orientation: 'vertical'
+            size_hint_x: 0.25
+
+            GlobalButton:
+                text: 'Back'
+                size_hint: None, None
+                size: right_menu.width, 40
+                on_press: root.manager.current = 'main_screen'
+
