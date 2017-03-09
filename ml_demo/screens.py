@@ -376,6 +376,7 @@ class DecisionTreeScreen(ModelScreen):
 
         tt = TreeTraverse()
         nodes, edges = tt.get_nodes_and_edges(model=self.model['structure'])
+
         graph = gv.Digraph(format='jpg')
         graph.body.append('style=filled')
         # graph.body.append('color=0.96 0.96 0.96')
@@ -383,7 +384,8 @@ class DecisionTreeScreen(ModelScreen):
         graph.body.append('color=blue')
 
         for node in nodes:
-            graph.node(str(node.num))
+            label = node.output if node.output else node.attribute
+            graph.node(name=str(node.num), label=str(label))
 
         for edge in edges:
             graph.edge(str(edge.a), str(edge.b))
