@@ -1,21 +1,25 @@
 import os
 import pickle
+import io
+
 from collections import namedtuple
-
-import numpy as np
-import pandas as pd
-
-from ml_components.models import neural_network, decision_tree
 
 from ml_demo.text import text_eng
 from ml_demo.dialogs import LoadDialog, SaveDialog, GraphDialog
 from ml_demo.utils.data_tools import split_data
 from ml_demo.utils.graph_tools import get_bottom_padding, TreeTraverse
 
+from ml_components.models import neural_network, decision_tree
+
+import numpy as np
+import pandas as pd
+import graphviz as gv
+
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
-from kivy.graphics import Color, Ellipse, Line
+from kivy.core.image import Image
+from kivy.graphics import Color, Ellipse, Line, Rectangle
 from kivy.clock import Clock
 
 from libs.garden.xpopup import XError, XNotification, XMessage
@@ -302,7 +306,7 @@ class NeuralNetworkScreen(ModelScreen):
                 for line in layer:
                     Line(points=[line.x1, line.y1, line.x2, line.y2])
 
-        # TODO: Fix resizeing.
+        # TODO: Fix resizing.
         self.get_root_window().bind(on_resize=lambda a, b, c: self.draw_network())
         self.get_root_window().bind(on_maximize=lambda a, b, c: self.draw_network())
         self.get_root_window().bind(on_minimize=lambda a, b, c: self.draw_network())
@@ -328,12 +332,13 @@ class DecisionTreeScreen(ModelScreen):
         super().load_model(path, filename)
 
         self.decision_tree = decision_tree.DecisionTree(model=self.model)
-        # self.draw_tree()
+        self.draw_tree()
 
     def train(self, *args):
-        try:
+        # try:
             self.decision_tree = decision_tree.DecisionTree()
             self.model = self.decision_tree.train(X=self.training_data['X'], y=self.training_data['y'])
+            self.draw_tree()
 
             self.loading_pop.dismiss()
 
@@ -348,11 +353,9 @@ class DecisionTreeScreen(ModelScreen):
             if self.predict_data:
                 self.predict_button.disabled = False
 
-            # self.draw_tree()
-
-        except Exception as e:
-            self.loading_pop.dismiss()
-            XError(text='Error training model!: {}'.format(e))
+        # except Exception as e:
+            # self.loading_pop.dismiss()
+            # XError(text='Error training model!: {}'.format(e))
 
     def predict(self):
         try:
@@ -369,49 +372,37 @@ class DecisionTreeScreen(ModelScreen):
         return accuracy
 
     def draw_tree(self):
+        self.dt_graphic.canvas.clear()  # Make sure canvas is empty.
+
         tt = TreeTraverse()
-        nodes, edges = tt.get_nodes_and_edges(model=self.model)
-        print(nodes)
-        # dot_data = tree.export_graphviz(clf, out_file=None)
-        # graph = pydotplus.graph_from_dot_data(dot_data)
-        # graph.write_pdf("iris.pdf")
+        nodes, edges = tt.get_nodes_and_edges(model=self.model['structure'])
+        graph = gv.Digraph(format='jpg')
+        graph.body.append('style=filled')
+        # graph.body.append('color=0.96 0.96 0.96')
+        # graph.body.append('color=#f5f5f5')
+        graph.body.append('color=blue')
 
-#    def draw_tree2(self):
-#        self.dt_graphic.canvas.clear()  # Make sure canvas is empty.
-#
-#        max_breadth = self.decision_tree.max_breadth
-#        depth = self.decision_tree.depth
-#
-#        tree_nodes = self.get_coords(self.model)
-#        tree_lines = []
-#
-#        d = (self.dt_graphic.size[1] * 0.75) / max_breadth  # Node diameter.
-#        color = (0.22, 0.22, 0.22, 1)  # Graph color.
-#        base_x = self.dt_graphic.pos[0]  # The x coord of the bottom left corner of the graphic area.
-#        base_y = self.dt_graphic.pos[1]  # The y coord of the bottom left corner of the graphic area.
-#        x_offset = (self.dt_graphic.size[0] - (max_breadth * d)) / max_breadth  # Space between nodes on the y axis.
-#        y_offset = (self.dt_graphic.size[1] - (depth * d)) / depth  # Space between nodes on the x axis.
-#
-#        with self.dt_graphic.canvas:
-#            for node in tree_nodes:
-#                Ellipse(pos=(node.x, node.y), size=(d, d))
+        for node in nodes:
+            graph.node(str(node.num))
 
-#    def get_coords(self, model, depth=0, nodes=[]):
-#        TreeNode = namedtuple('TreeNode', ['x', 'y'])
-#        TreeLine = namedtuple('TreeLine', ['x1', 'y1', 'x2', 'y2'])
-#
-#        x = -1
-#        y = depth
-#        nodes.append(TreeNode(x=x, y=y))
-#
-#        if model[0] == -1:
-#            return nodes
-#        else:
-#            for node in model[1:]:
-#                nodes.extend(self.get_coords(node))
+        for edge in edges:
+            graph.edge(str(edge.a), str(edge.b))
+
+        graph_img = io.BytesIO(graph.pipe())
+
+        with self.dt_graphic.canvas:
+            self.dt_graphic.bg = Rectangle(texture=Image(graph_img, ext='jpg').texture)
+            self.dt_graphic.bg.pos = self.dt_graphic.pos
+            self.dt_graphic.bg.size = self.dt_graphic.size
+
+        self.get_root_window().bind(on_resize=lambda a, b, c: self.draw_tree())
+        self.get_root_window().bind(on_maximize=lambda a, b, c: self.draw_tree())
+        self.get_root_window().bind(on_minimize=lambda a, b, c: self.draw_tree())
+
 
 class HelpScreen(Screen):
     pass
+
 
 class NeuralNetworkHelpScreen(HelpScreen):
     def __init__(self, **kw):
